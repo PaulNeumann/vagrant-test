@@ -1,5 +1,7 @@
 # vagrant-test
-This repository contains test Vagrant boxes. As of 03 March 2019, the only test box available is an Oracle Database 19c preview box, based on the boxes in Oracle's [vagrant-boxes](https://github.com/oracle/vagrant-boxes) repository.
+This repository contains test Vagrant boxes. As of 26 April 2019, test boxes are available for:
+* Oracle Database 19.2.0 preview box, based on the boxes in Oracle's [vagrant-boxes](https://github.com/oracle/vagrant-boxes) repository.
+* Oracle Database 19.3.0 box, also based on the boxes in Oracle's [vagrant-boxes](https://github.com/oracle/vagrant-boxes) repository.
 
 ## Prerequisites
 1. Install [Oracle VM VirtualBox](https://www.virtualbox.org/wiki/Downloads)
