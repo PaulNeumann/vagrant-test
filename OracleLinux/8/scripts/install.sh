@@ -13,9 +13,9 @@
 
 echo 'INSTALLER: Started up'
 
-# install modules needed for rebuilding VirtualBox
-# Guest Additions after kernel updates
-dnf -y install elfutils-libelf-devel gcc kernel-devel kernel-headers perl
+# install packages needed for rebuilding VirtualBox
+#   Guest Additions after kernel upgrades
+dnf -y install elfutils-libelf-devel gcc kernel-devel
 
 # get up to date
 dnf -y upgrade
