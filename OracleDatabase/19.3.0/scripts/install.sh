@@ -11,6 +11,9 @@
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
 
+# Abort on any error
+set -e
+
 echo 'INSTALLER: Started up'
 
 # get up to date
@@ -35,16 +38,16 @@ yum install -y oracle-database-preinstall-19c openssl
 echo 'INSTALLER: Oracle preinstall and openssl complete'
 
 # create directories
-mkdir -p "$ORACLE_HOME" && \
-mkdir -p /u01/app && \
+mkdir -p "$ORACLE_HOME"
+mkdir -p /u01/app
 ln -s "$ORACLE_BASE" /u01/app/oracle
 
 echo 'INSTALLER: Oracle directories created'
 
 # set environment variables
-echo "export ORACLE_BASE=$ORACLE_BASE" >> /home/oracle/.bashrc && \
-echo "export ORACLE_HOME=$ORACLE_HOME" >> /home/oracle/.bashrc && \
-echo "export ORACLE_SID=$ORACLE_SID" >> /home/oracle/.bashrc   && \
+echo "export ORACLE_BASE=$ORACLE_BASE" >> /home/oracle/.bashrc
+echo "export ORACLE_HOME=$ORACLE_HOME" >> /home/oracle/.bashrc
+echo "export ORACLE_SID=$ORACLE_SID" >> /home/oracle/.bashrc
 echo "export PATH=\$PATH:\$ORACLE_HOME/bin" >> /home/oracle/.bashrc
 
 echo 'INSTALLER: Environment variables set'
@@ -53,9 +56,9 @@ echo 'INSTALLER: Environment variables set'
 
 unzip /vagrant/LINUX.X64_193000_db_home.zip -d "$ORACLE_HOME"/
 cp /vagrant/ora-response/db_install.rsp.tmpl /vagrant/ora-response/db_install.rsp
-sed -i -e "s|###ORACLE_BASE###|$ORACLE_BASE|g" /vagrant/ora-response/db_install.rsp && \
-sed -i -e "s|###ORACLE_HOME###|$ORACLE_HOME|g" /vagrant/ora-response/db_install.rsp && \
-sed -i -e "s|###ORACLE_EDITION###|$ORACLE_EDITION|g" /vagrant/ora-response/db_install.rsp && \
+sed -i -e "s|###ORACLE_BASE###|$ORACLE_BASE|g" /vagrant/ora-response/db_install.rsp
+sed -i -e "s|###ORACLE_HOME###|$ORACLE_HOME|g" /vagrant/ora-response/db_install.rsp
+sed -i -e "s|###ORACLE_EDITION###|$ORACLE_EDITION|g" /vagrant/ora-response/db_install.rsp
 chown oracle:oinstall -R "$ORACLE_BASE"
 
 su -l oracle -c "yes | $ORACLE_HOME/runInstaller -silent -ignorePrereqFailure -waitforcompletion -responseFile /vagrant/ora-response/db_install.rsp"
@@ -75,7 +78,7 @@ su -l oracle -c "echo 'LISTENER =
 (DESCRIPTION_LIST =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1))
-    (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = $LISTENER_PORT))
   )
 )
 
@@ -94,10 +97,11 @@ echo 'INSTALLER: Listener created'
 export ORACLE_PWD=${ORACLE_PWD:-"$(openssl rand -base64 8)1"}
 
 cp /vagrant/ora-response/dbca.rsp.tmpl /vagrant/ora-response/dbca.rsp
-sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" /vagrant/ora-response/dbca.rsp && \
-sed -i -e "s|###ORACLE_PDB###|$ORACLE_PDB|g" /vagrant/ora-response/dbca.rsp && \
-sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" /vagrant/ora-response/dbca.rsp && \
+sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" /vagrant/ora-response/dbca.rsp
+sed -i -e "s|###ORACLE_PDB###|$ORACLE_PDB|g" /vagrant/ora-response/dbca.rsp
+sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" /vagrant/ora-response/dbca.rsp
 sed -i -e "s|###ORACLE_PWD###|$ORACLE_PWD|g" /vagrant/ora-response/dbca.rsp
+sed -i -e "s|###EM_EXPRESS_PORT###|$EM_EXPRESS_PORT|g" /vagrant/ora-response/dbca.rsp
 
 # Create DB
 su -l oracle -c "dbca -silent -createDatabase -responseFile /vagrant/ora-response/dbca.rsp"
@@ -106,6 +110,8 @@ su -l oracle -c "dbca -silent -createDatabase -responseFile /vagrant/ora-respons
 su -l oracle -c "sqlplus / as sysdba <<EOF
    ALTER PLUGGABLE DATABASE $ORACLE_PDB SAVE STATE;
    EXEC DBMS_XDB_CONFIG.SETGLOBALPORTENABLED (TRUE);
+   ALTER SYSTEM SET LOCAL_LISTENER = '(ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = $LISTENER_PORT))' SCOPE=BOTH;
+   ALTER SYSTEM REGISTER;
    exit
 EOF"
 
@@ -117,7 +123,7 @@ chmod o+r "$ORACLE_HOME"/network/admin/tnsnames.ora
 # create tnsnames.ora entry for PDB
 echo "$ORACLE_PDB =
   (DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = $LISTENER_PORT))
     (CONNECT_DATA =
       (SERVER = DEDICATED)
       (SERVICE_NAME = $ORACLE_PDB)
@@ -138,8 +144,8 @@ systemctl enable oracle-rdbms
 systemctl start oracle-rdbms
 echo "INSTALLER: Created and enabled oracle-rdbms systemd's service"
 
-cp /vagrant/scripts/setPassword.sh /home/oracle/ && \
-chown oracle:oinstall /home/oracle/setPassword.sh && \
+cp /vagrant/scripts/setPassword.sh /home/oracle/
+chown oracle:oinstall /home/oracle/setPassword.sh
 chmod u+x /home/oracle/setPassword.sh
 
 echo 'INSTALLER: setPassword.sh file setup'
