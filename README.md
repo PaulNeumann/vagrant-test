@@ -4,6 +4,7 @@ This repository contains test Vagrant projects. As of 10 March 2021, test projec
 
 * Oracle Database 19.2.0 (preview), based on the projects in Oracle's [vagrant-projects](https://github.com/oracle/vagrant-projects) repository.
 * Oracle Database 19.3.0, based on the projects in Oracle's [vagrant-projects](https://github.com/oracle/vagrant-projects) repository.
+* Oracle Database 21.3.0, based on the projects in Oracle's [vagrant-projects](https://github.com/oracle/vagrant-projects) repository.
 
 ## Prerequisites
 
