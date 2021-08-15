@@ -81,8 +81,10 @@ rm /tmp/db_install.rsp
 echo 'INSTALLER: Oracle software installed'
 
 # create sqlnet.ora, listener.ora and tnsnames.ora
-su -l oracle -c "mkdir -p $ORACLE_HOME/network/admin"
-su -l oracle -c "echo 'NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)' > $ORACLE_HOME/network/admin/sqlnet.ora"
+network_admin_dir=$("$ORACLE_HOME"/bin/orabasehome)/network/admin
+su -l oracle -c "mkdir -p $network_admin_dir"
+
+su -l oracle -c "echo 'NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)' > $network_admin_dir/sqlnet.ora"
 
 # Listener.ora
 su -l oracle -c "echo 'LISTENER =
@@ -95,9 +97,9 @@ su -l oracle -c "echo 'LISTENER =
 
 DEDICATED_THROUGH_BROKER_LISTENER=ON
 DIAG_ADR_ENABLED = off
-' > $ORACLE_HOME/network/admin/listener.ora"
+' > $network_admin_dir/listener.ora"
 
-su -l oracle -c "echo '$ORACLE_SID=localhost:$LISTENER_PORT/$ORACLE_SID' > $ORACLE_HOME/network/admin/tnsnames.ora"
+su -l oracle -c "echo '$ORACLE_SID=localhost:$LISTENER_PORT/$ORACLE_SID' > $network_admin_dir/tnsnames.ora"
 # shellcheck disable=SC2153
 su -l oracle -c "echo '$ORACLE_PDB=
 (DESCRIPTION =
@@ -106,7 +108,7 @@ su -l oracle -c "echo '$ORACLE_PDB=
     (SERVER = DEDICATED)
     (SERVICE_NAME = $ORACLE_PDB)
   )
-)' >> $ORACLE_HOME/network/admin/tnsnames.ora"
+)' >> $network_admin_dir/tnsnames.ora"
 
 # Start LISTENER
 su -l oracle -c 'lsnrctl start'
