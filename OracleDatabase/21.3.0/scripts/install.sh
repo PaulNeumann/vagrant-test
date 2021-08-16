@@ -33,8 +33,7 @@ timedatectl set-timezone "$SYSTEM_TIMEZONE"
 echo "INSTALLER: System time zone set to $SYSTEM_TIMEZONE"
 
 # Install Oracle Database prereq and openssl packages
-# TODO: use 21c preinstallation RPM when it's released
-dnf install -y oracle-database-preinstall-19c openssl
+dnf install -y oracle-database-preinstall-21c openssl
 
 echo 'INSTALLER: Oracle preinstall and openssl complete'
 
@@ -83,7 +82,6 @@ echo 'INSTALLER: Oracle software installed'
 # create sqlnet.ora, listener.ora and tnsnames.ora
 network_admin_dir=$("$ORACLE_HOME"/bin/orabasehome)/network/admin
 su -l oracle -c "mkdir -p $network_admin_dir"
-
 su -l oracle -c "echo 'NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)' > $network_admin_dir/sqlnet.ora"
 
 # Listener.ora
