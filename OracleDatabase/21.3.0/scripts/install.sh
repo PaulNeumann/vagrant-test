@@ -46,7 +46,7 @@ echo 'INSTALLER: Oracle directories created'
 
 # set environment variables
 # shellcheck disable=SC2153
-cat << EOF >> /home/oracle/.bashrc
+cat >> /home/oracle/.bashrc << EOF
 export ORACLE_BASE=$ORACLE_BASE
 export ORACLE_HOME=$ORACLE_HOME
 export ORACLE_SID=$ORACLE_SID
