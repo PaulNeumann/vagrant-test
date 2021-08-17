@@ -41,6 +41,8 @@ echo 'INSTALLER: Oracle preinstall and openssl complete'
 mkdir -p "$ORACLE_HOME"
 mkdir -p /u01/app
 ln -s "$ORACLE_BASE" /u01/app/oracle
+inventory_location=$(realpath "$ORACLE_BASE"/../oraInventory)
+mkdir -p "$inventory_location"
 
 echo 'INSTALLER: Oracle directories created'
 
@@ -59,10 +61,11 @@ echo 'INSTALLER: Environment variables set'
 
 unzip /vagrant/LINUX.X64_213000_db_home.zip -d "$ORACLE_HOME"/
 cp /vagrant/ora-response/db_install.rsp.tmpl /tmp/db_install.rsp
+sed -i -e "s|###INVENTORY_LOCATION###|$inventory_location|g" /tmp/db_install.rsp
 sed -i -e "s|###ORACLE_BASE###|$ORACLE_BASE|g" /tmp/db_install.rsp
 sed -i -e "s|###ORACLE_HOME###|$ORACLE_HOME|g" /tmp/db_install.rsp
 sed -i -e "s|###ORACLE_EDITION###|$ORACLE_EDITION|g" /tmp/db_install.rsp
-chown oracle:oinstall -R "$ORACLE_BASE"
+chown oracle:oinstall -R "$ORACLE_BASE" "$inventory_location"
 
 # runInstaller should return 6 (successful with warnings) when prereqs are ignored
 su -l oracle -c "yes | $ORACLE_HOME/runInstaller -silent -ignorePrereqFailure -waitforcompletion -responseFile /tmp/db_install.rsp" || {
@@ -73,7 +76,7 @@ su -l oracle -c "yes | $ORACLE_HOME/runInstaller -silent -ignorePrereqFailure -w
   fi;
 }
 
-"$ORACLE_BASE"/oraInventory/orainstRoot.sh
+"$inventory_location"/orainstRoot.sh
 "$ORACLE_HOME"/root.sh
 rm /tmp/db_install.rsp
 
